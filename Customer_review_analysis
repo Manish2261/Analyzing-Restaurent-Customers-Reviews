@@ -1,0 +1,80 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed May 13 10:33:18 2020
+
+@author: Lenovo
+"""
+
+#Natural Language Processing Algo:
+
+#Importing the Librarie:
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import re
+import nltk
+
+#Importing the Datasets:
+datasets = pd.read_csv('Restaurant_Reviews.tsv', delimiter = '\t', quoting = 3)
+
+#Cleaning of data for first review:
+"""
+nltk.download('stopwords')
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+ps =PorterStemmer()
+review= re.sub('[^ a-zA-Z]',' ', datasets['Review'][0])
+review = review.lower()
+review = review.split()
+review = [ps.stem(word) for word in review if not word in set(stopwords.words('english'))]
+review = ' '.join(review)
+"""
+
+#Cleaning of data for entire Dataset:
+nltk.download('stopwords')
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+ps  = PorterStemmer()
+corpus = []
+for i in range(0,1000): 
+    review = re.sub('[^ a-zA-Z]', ' ', datasets['Review'][i])
+    review = review.lower()
+    review = review.split()
+    review = [ps.stem(word) for word in review if not word in set(stopwords.words('english'))]
+    review = ' '.join(review)
+    corpus.append(review)
+
+#Implementing the BagofWords Model:
+from sklearn.feature_extraction.text import CountVectorizer
+cv = CountVectorizer()
+x = cv.fit_transform(corpus).toarray()
+y = datasets.iloc[ : , -1].values
+
+#Splitting of Datasets:
+from sklearn.model_selection import train_test_split
+x_train,x_test,y_train,y_test = train_test_split(x,y, test_size = 0.2, random_state = 0)
+
+#Applying Classification Model fr further Processing:
+#By NaiveBayes Model:
+from sklearn.naive_bayes import GaussianNB
+classifier = GaussianNB( )
+classifier.fit(x_train, y_train)
+    
+#Predicting the Results:
+y_pred  = classifier.predict(x_test)    
+    
+
+#Confusion Matrix:
+from sklearn.metrics import confusion_matrix
+cm = confusion_matrix(y_test, y_pred)
+    
+#Applying the K-Fold Evaluation Technique:
+from sklearn.model_selection import cross_val_score
+cvs = cross_val_score(estimator =classifier, X = x_train, y= y_train, cv = 10)
+print("Accuracy: {:.2f} %".format(cvs.mean()*100))
+print("Standard Deviation: {:.2f} %".format(cvs.std()*100))
+    
+    
+    
+    
+    
